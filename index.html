@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Appwrite CMS Single Page</title>
+    <title>Appwrite CMS Gallery</title>
     <!-- Appwrite SDK from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
     <style>
@@ -46,21 +47,57 @@
             margin-bottom: 0.5em;
         }
 
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        /* Update: Card Design with Image */
         .card {
-            padding: 2em;
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             border-radius: 16px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: 2rem;
             text-align: left;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+            /* Ensures image stays inside corners */
+            display: flex;
+            flex-direction: column;
         }
 
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #2a2a2a;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-content {
+            padding: 1.5em;
+        }
+
+        .post-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .post-meta {
+            font-size: 0.95rem;
+            color: #aaa;
+            margin-top: 0.5rem;
         }
 
         .loading {
@@ -70,40 +107,30 @@
         }
 
         @keyframes pulse {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
-        }
+            0% {
+                opacity: 0.5;
+            }
 
-        .data-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
+            50% {
+                opacity: 1;
+            }
 
-        .post-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 0.5rem;
-        }
-
-        .post-meta {
-            font-size: 0.85rem;
-            color: #aaa;
-            margin-bottom: 1rem;
+            100% {
+                opacity: 0.5;
+            }
         }
 
         .error {
             color: #ff8888;
             border-color: #ff4444;
+            padding: 2em;
         }
     </style>
 </head>
+
 <body>
     <div id="root">
-        <h1>Appwrite + HTML</h1>
+        <h1>Appwrite + Gallery</h1>
         <p style="color: #aaa; margin-bottom: 2rem;">
             Dynamic content fetched from your Appwrite Database
         </p>
@@ -117,12 +144,12 @@
         const { Client, Databases } = Appwrite;
 
         const client = new Client();
-        
+
         // CONFIGURATION
         const ENDPOINT = 'https://fra.cloud.appwrite.io/v1';
-        const PROJECT_ID = '69847113001c5b161d27'; // Updated Project ID
-        const DATABASE_ID = '69847143002362c4d0b1'; // Updated Database ID
-        const COLLECTION_ID = 'cms'; // Updated Collection ID
+        const PROJECT_ID = '69847113001c5b161d27';
+        const DATABASE_ID = '69847143002362c4d0b1';
+        const COLLECTION_ID = 'cms';
 
         client
             .setEndpoint(ENDPOINT)
@@ -136,15 +163,15 @@
                     DATABASE_ID,
                     COLLECTION_ID
                 );
-                
+
                 const posts = response.documents;
                 const grid = document.getElementById('data-grid');
                 const loading = document.getElementById('loading');
-                
+
                 loading.style.display = 'none';
 
                 if (posts.length === 0) {
-                    grid.innerHTML = '<div class="card"><p>No posts found.</p></div>';
+                    grid.innerHTML = '<div class="card error"><p>No posts found.</p></div>';
                     return;
                 }
 
@@ -152,27 +179,49 @@
                     const card = document.createElement('div');
                     card.className = 'card';
 
+                    // 1. Image Handler
+                    // We check for 'Image' (capital I) as per your screenshot, 
+                    // but also 'image' (small i) just in case.
+                    const imageUrl = post.Image || post.image || 'https://placehold.co/600x400/222/888?text=No+Image';
+
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = post.title || 'Post Image';
+                    img.className = 'card-image';
+
+                    // Add error handler for broken images
+                    img.onerror = function () {
+                        this.src = 'https://placehold.co/600x400/222/888?text=Image+Error';
+                    };
+
+                    card.appendChild(img);
+
+                    // 2. Content Container
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'card-content';
+
                     // Title
                     const title = document.createElement('div');
                     title.className = 'post-title';
                     title.textContent = post.title || 'Untitled Post';
-                    card.appendChild(title);
+                    contentDiv.appendChild(title);
 
                     // Sub-title
                     if (post['sub-title']) {
                         const subtitle = document.createElement('div');
                         subtitle.className = 'post-meta';
                         subtitle.textContent = post['sub-title'];
-                        card.appendChild(subtitle);
+                        contentDiv.appendChild(subtitle);
                     }
 
+                    card.appendChild(contentDiv);
                     grid.appendChild(card);
                 });
 
             } catch (error) {
                 console.error("Appwrite error:", error);
                 document.getElementById('loading').style.display = 'none';
-                
+
                 const errorContainer = document.getElementById('error-container');
                 errorContainer.innerHTML = `
                     <div class="card error">
@@ -187,4 +236,5 @@
         fetchPosts();
     </script>
 </body>
+
 </html>
