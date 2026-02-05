@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appwrite CMS Single Page</title>
+    <!-- Appwrite SDK from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
+    <style>
+        :root {
+            font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            font-weight: 400;
+            color-scheme: dark;
+            color: rgba(255, 255, 255, 0.87);
+            background-color: #0f0e17;
+            font-synthesis: none;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            place-items: center;
+            min-width: 320px;
+            min-height: 100vh;
+            background: radial-gradient(circle at top left, #2a2a72, #0f0e17);
+        }
+
+        #root {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3.2em;
+            line-height: 1.1;
+            background: -webkit-linear-gradient(315deg, #42d392 25%, #647eff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5em;
+        }
+
+        .card {
+            padding: 2em;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 2rem;
+            text-align: left;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .loading {
+            font-size: 1.5rem;
+            color: #888;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .post-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .post-meta {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 1rem;
+        }
+
+        .error {
+            color: #ff8888;
+            border-color: #ff4444;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <h1>Appwrite + HTML</h1>
+        <p style="color: #aaa; margin-bottom: 2rem;">
+            Dynamic content fetched from your Appwrite Database
+        </p>
+
+        <div id="loading" class="loading">Loading data...</div>
+        <div id="error-container"></div>
+        <div id="data-grid" class="data-grid"></div>
+    </div>
+
+    <script>
+        const { Client, Databases } = Appwrite;
+
+        const client = new Client();
+        
+        // CONFIGURATION
+        const ENDPOINT = 'https://fra.cloud.appwrite.io/v1';
+        const PROJECT_ID = '69847113001c5b161d27'; // Updated Project ID
+        const DATABASE_ID = '69847143002362c4d0b1'; // Updated Database ID
+        const COLLECTION_ID = 'cms'; // Updated Collection ID
+
+        client
+            .setEndpoint(ENDPOINT)
+            .setProject(PROJECT_ID);
+
+        const databases = new Databases(client);
+
+        async function fetchPosts() {
+            try {
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTION_ID
+                );
+                
+                const posts = response.documents;
+                const grid = document.getElementById('data-grid');
+                const loading = document.getElementById('loading');
+                
+                loading.style.display = 'none';
+
+                if (posts.length === 0) {
+                    grid.innerHTML = '<div class="card"><p>No posts found.</p></div>';
+                    return;
+                }
+
+                posts.forEach(post => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+
+                    // Title
+                    const title = document.createElement('div');
+                    title.className = 'post-title';
+                    title.textContent = post.title || 'Untitled Post';
+                    card.appendChild(title);
+
+                    // Sub-title
+                    if (post['sub-title']) {
+                        const subtitle = document.createElement('div');
+                        subtitle.className = 'post-meta';
+                        subtitle.textContent = post['sub-title'];
+                        card.appendChild(subtitle);
+                    }
+
+                    grid.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error("Appwrite error:", error);
+                document.getElementById('loading').style.display = 'none';
+                
+                const errorContainer = document.getElementById('error-container');
+                errorContainer.innerHTML = `
+                    <div class="card error">
+                        <h3>⚠️ Error Fetching Data</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Run fetch on load
+        fetchPosts();
+    </script>
+</body>
+</html>
