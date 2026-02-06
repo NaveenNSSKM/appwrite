@@ -236,11 +236,13 @@
                         contentDiv.appendChild(subtitle);
                     }
 
-                    // Read More Button
+                    // Read More Button - Pass summary instead of subtitle
                     const readMoreBtn = document.createElement('a');
                     readMoreBtn.className = 'read-more-btn';
                     readMoreBtn.textContent = 'Read More';
-                    readMoreBtn.href = `post-detail.html?id=${post.$id}&title=${encodeURIComponent(post.title || 'Untitled')}&subtitle=${encodeURIComponent(post['sub-title'] || '')}&image=${encodeURIComponent(imageUrl)}`;
+                    // Get summary from database, fallback to empty string
+                    const summary = post.summary || '';
+                    readMoreBtn.href = `post-detail.html?id=${post.$id}&title=${encodeURIComponent(post.title || 'Untitled')}&summary=${encodeURIComponent(summary)}&image=${encodeURIComponent(imageUrl)}`;
                     contentDiv.appendChild(readMoreBtn);
 
                     card.appendChild(contentDiv);

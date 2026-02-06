@@ -95,22 +95,6 @@
             line-height: 1.6;
         }
 
-        .post-meta {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: #888;
-            font-size: 0.9rem;
-        }
-
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
         .loading {
             text-align: center;
             font-size: 1.5rem;
@@ -171,10 +155,10 @@
             const loading = document.getElementById('loading');
             const postDetail = document.getElementById('post-detail');
 
-            // Get data from URL
+            // Get data from URL - now getting summary instead of subtitle
             const postId = getUrlParameter('id');
             const title = decodeURIComponent(getUrlParameter('title') || 'Untitled Post');
-            const subtitle = decodeURIComponent(getUrlParameter('subtitle') || '');
+            const summary = decodeURIComponent(getUrlParameter('summary') || '');
             const image = decodeURIComponent(getUrlParameter('image') || 'https://placehold.co/900x400/222/888?text=No+Image');
 
             loading.style.display = 'none';
@@ -203,24 +187,13 @@
             titleEl.textContent = title;
             content.appendChild(titleEl);
 
-            // Subtitle/Summary
-            if (subtitle && subtitle !== 'null' && subtitle !== '') {
-                const subtitleEl = document.createElement('div');
-                subtitleEl.className = 'post-subtitle';
-                subtitleEl.textContent = subtitle;
-                content.appendChild(subtitleEl);
+            // Summary (not subtitle)
+            if (summary && summary !== 'null' && summary !== '') {
+                const summaryEl = document.createElement('div');
+                summaryEl.className = 'post-subtitle';
+                summaryEl.textContent = summary;
+                content.appendChild(summaryEl);
             }
-
-            // Meta information
-            const meta = document.createElement('div');
-            meta.className = 'post-meta';
-            meta.innerHTML = `
-                <div class="meta-item">
-                    <span>📄</span>
-                    <span>Post ID: ${summary}</span>
-                </div>
-            `;
-            content.appendChild(meta);
 
             container.appendChild(content);
             postDetail.appendChild(container);
