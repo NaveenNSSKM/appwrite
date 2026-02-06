@@ -42,6 +42,7 @@
             font-size: 3.2em;
             line-height: 1.1;
             background: -webkit-linear-gradient(315deg, #42d392 25%, #647eff);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 0.5em;
@@ -124,6 +125,27 @@
             color: #ff8888;
             border-color: #ff4444;
             padding: 2em;
+        }
+
+        .read-more-btn {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 0.95rem;
+        }
+
+        .read-more-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
         }
     </style>
 </head>
@@ -213,6 +235,13 @@
                         subtitle.textContent = post['sub-title'];
                         contentDiv.appendChild(subtitle);
                     }
+
+                    // Read More Button
+                    const readMoreBtn = document.createElement('a');
+                    readMoreBtn.className = 'read-more-btn';
+                    readMoreBtn.textContent = 'Read More';
+                    readMoreBtn.href = `post-detail.html?id=${post.$id}&title=${encodeURIComponent(post.title || 'Untitled')}&subtitle=${encodeURIComponent(post['sub-title'] || '')}&image=${encodeURIComponent(imageUrl)}`;
+                    contentDiv.appendChild(readMoreBtn);
 
                     card.appendChild(contentDiv);
                     grid.appendChild(card);
