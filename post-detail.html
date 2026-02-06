@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Detail - Appwrite CMS</title>
+    <style>
+        :root {
+            font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            font-weight: 400;
+            color-scheme: dark;
+            color: rgba(255, 255, 255, 0.87);
+            background-color: #0f0e17;
+            font-synthesis: none;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            place-items: center;
+            min-width: 320px;
+            min-height: 100vh;
+            background: radial-gradient(circle at top left, #2a2a72, #0f0e17);
+        }
+
+        #root {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(-5px);
+        }
+
+        .post-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .post-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            background-color: #2a2a2a;
+        }
+
+        .post-content {
+            padding: 3rem;
+        }
+
+        .post-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            background: -webkit-linear-gradient(315deg, #42d392 25%, #647eff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .post-subtitle {
+            font-size: 1.25rem;
+            color: #aaa;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .post-meta {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #888;
+            padding: 3rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.5;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-content {
+                padding: 2rem;
+            }
+
+            .post-title {
+                font-size: 2rem;
+            }
+
+            .post-image {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root">
+        <a href="simple-cms.html" class="back-btn">
+            <span>←</span> Back to Gallery
+        </a>
+
+        <div id="loading" class="loading">Loading post...</div>
+        <div id="post-detail"></div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Display post details
+        function displayPost() {
+            const loading = document.getElementById('loading');
+            const postDetail = document.getElementById('post-detail');
+
+            // Get data from URL
+            const postId = getUrlParameter('id');
+            const title = decodeURIComponent(getUrlParameter('title') || 'Untitled Post');
+            const subtitle = decodeURIComponent(getUrlParameter('subtitle') || '');
+            const image = decodeURIComponent(getUrlParameter('image') || 'https://placehold.co/900x400/222/888?text=No+Image');
+
+            loading.style.display = 'none';
+
+            // Create post container
+            const container = document.createElement('div');
+            container.className = 'post-container';
+
+            // Image
+            const img = document.createElement('img');
+            img.src = image;
+            img.alt = title;
+            img.className = 'post-image';
+            img.onerror = function () {
+                this.src = 'https://placehold.co/900x400/222/888?text=Image+Error';
+            };
+            container.appendChild(img);
+
+            // Content
+            const content = document.createElement('div');
+            content.className = 'post-content';
+
+            // Title
+            const titleEl = document.createElement('h1');
+            titleEl.className = 'post-title';
+            titleEl.textContent = title;
+            content.appendChild(titleEl);
+
+            // Subtitle/Summary
+            if (subtitle && subtitle !== 'null' && subtitle !== '') {
+                const subtitleEl = document.createElement('div');
+                subtitleEl.className = 'post-subtitle';
+                subtitleEl.textContent = subtitle;
+                content.appendChild(subtitleEl);
+            }
+
+            // Meta information
+            const meta = document.createElement('div');
+            meta.className = 'post-meta';
+            meta.innerHTML = `
+                <div class="meta-item">
+                    <span>📄</span>
+                    <span>Post ID: ${postId}</span>
+                </div>
+            `;
+            content.appendChild(meta);
+
+            container.appendChild(content);
+            postDetail.appendChild(container);
+        }
+
+        // Run on load
+        displayPost();
+    </script>
+</body>
+
+</html>
